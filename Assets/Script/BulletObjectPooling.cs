@@ -1,35 +1,54 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BulletObjectPooling : MonoBehaviour
 {
+    public enum BulletType { Fire, Grass, Normal }
+ 
+    [SerializeField] private GameObject fireBulletPrefab;
+    [SerializeField] private GameObject grassBulletPrefab;
+    public GameObject normalBulletPrefab;
     public float bulletSpeed = 5.0f;
-    public float bulletDelay = 0.0f;
-    //public BulletTutorial bullet;
-    public const float BULLET_DELAY_MAX = 3.0f;
-    static private List<BulletObjectPooling> bullets;
 
-    // Start is called before the first frame update
+    private static List<BulletObjectPooling> fireBullets;
+    private static List<BulletObjectPooling> grassBullets;
+    private static List<BulletObjectPooling> normalBullets;
+
     void Awake()
     {
-
-        if (bullets == null)
+        if (fireBullets == null)
         {
-            bullets = new List<BulletObjectPooling>();
+            fireBullets = new List<BulletObjectPooling>();
         }
 
-        bullets.Add(this);
+        if (grassBullets == null)
+        {
+            grassBullets = new List<BulletObjectPooling>();
+        }
+
+        if (normalBullets == null)
+        {
+            normalBullets = new List<BulletObjectPooling>();
+        }
+
+        if (this.gameObject.CompareTag("Fire_Bullet"))
+        {
+            fireBullets.Add(this);
+        }
+        else if (this.gameObject.CompareTag("Grass_Bullet"))
+        {
+            grassBullets.Add(this);
+        }
+        else if (this.gameObject.CompareTag("Normal_Bullet"))
+        {
+            normalBullets.Add(this);
+        }
 
         gameObject.GetComponent<Rigidbody>().isKinematic = false;
-
-        //set all to inactive
         gameObject.SetActive(false);
-
         DontDestroyOnLoad(this.gameObject);
     }
 
-    // Update is called once per frame
     void Update()
     {
         transform.Translate(Vector3.forward * bulletSpeed * Time.deltaTime);
@@ -41,30 +60,51 @@ public class BulletObjectPooling : MonoBehaviour
         Debug.Log("BLAST REMOVED");
     }
 
-    // private void OnCollisionEnter(Collision collision)
-    // {
-    //     if(collision.collider.tag == "WallTag")
-    //     {
-    //         BulletTutorial bullet = Instantiate(nb, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
-    //     }
-    // }
-
-    static public BulletObjectPooling SpawnBullet(Vector3 location, Quaternion landing)
+    static public BulletObjectPooling SpawnBullet(BulletType type, Vector3 location, Quaternion rotation)
     {
-        foreach (BulletObjectPooling bullet in bullets)
+        List<BulletObjectPooling> bulletList;
+        GameObject bulletPrefab;
+
+        switch (type)
         {
-            if (bullet.gameObject.activeSelf == false)
+            case BulletType.Fire:
+                bulletList = fireBullets;
+                bulletPrefab = Instance.fireBulletPrefab;
+                break;
+            case BulletType.Grass:
+                bulletList = grassBullets;
+                bulletPrefab = Instance.grassBulletPrefab;
+                break;
+            case BulletType.Normal:
+            default:
+                bulletList = normalBullets;
+                bulletPrefab = Instance.normalBulletPrefab;
+                break;
+        }
+
+        foreach (BulletObjectPooling bullet in bulletList)
+        {
+            if (!bullet.gameObject.activeSelf)
             {
                 bullet.transform.position = location;
-                bullet.transform.rotation = landing;
-
+                bullet.transform.rotation = rotation;
                 bullet.gameObject.SetActive(true);
                 bullet.gameObject.GetComponent<Rigidbody>().isKinematic = false;
-
                 return bullet;
             }
         }
 
-        return null;
+        // If no bullets are available in the pool, instantiate a new one
+        BulletObjectPooling newBullet = Instantiate(bulletPrefab, location, rotation).GetComponent<BulletObjectPooling>();
+        bulletList.Add(newBullet);
+        return newBullet;
+    }
+
+    private static BulletObjectPooling Instance
+    {
+        get
+        {
+            return FindObjectOfType<BulletObjectPooling>();
+        }
     }
 }

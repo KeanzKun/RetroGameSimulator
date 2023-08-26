@@ -1,13 +1,31 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI; // Add this at the top
 
 public class GunInventory : MonoBehaviour
 {
+    public Image[] gunSlots; // Drag the three Image components here
+    public Text[] gunNames;  // Drag the three Text components here if you added them
+    public Image[] gunSlotHighlights; // Drag the highlight Image components here
     public int maxSlots = 3;
     public List<GameObject> guns = new List<GameObject>();
     public GameObject activeGun;
     public Transform gunContainer;
     public GameObject gunDropPrefab; // Assign the gun drop prefab in the inspector.
+
+
+    void Start()
+    {
+        // Hide all gun slots and highlights at the start
+        foreach (Image slot in gunSlots)
+        {
+            slot.gameObject.SetActive(false);
+        }
+        foreach (Image highlight in gunSlotHighlights)
+        {
+            highlight.gameObject.SetActive(false);
+        }
+    }
 
     public void AddGun(GameObject gunPrefab)
     {
@@ -21,6 +39,9 @@ public class GunInventory : MonoBehaviour
                 SetActiveGun(pickedGun);
             }
         }
+
+        Debug.Log("Adding gun: " + gunPrefab.name);
+        UpdateUI();
     }
 
 
@@ -76,41 +97,36 @@ public class GunInventory : MonoBehaviour
                 activeGun = null;
             }
         }
+
+        UpdateUI();
     }
 
     public void DropGun()
     {
-        Debug.Log("ENTERED DROP");
         if (activeGun != null)
         {
-            Debug.Log("ENTERED FIRST IF");
 
             GunProperties gunProperties = activeGun.GetComponent<GunProperties>();
             if (gunProperties)
             {
                 if (gunProperties.gunDropPrefab)
                 {
-                    Debug.Log("ENTERED SECOND IF");
 
                     // Instantiate the corresponding drop prefab at the player's position.
                     Vector3 dropPosition = transform.position + transform.forward * 1.5f + transform.up * 0.5f;
                     GameObject droppedGun = Instantiate(gunProperties.gunDropPrefab, dropPosition, Quaternion.identity);
 
-                    Debug.Log("DROPPED GUN: " + droppedGun);
                     // If you want the gun to have some forward momentum when dropped, you can add a Rigidbody to the gunDropPrefab and apply force here.
                     Rigidbody rb = droppedGun.GetComponent<Rigidbody>();
-                    Debug.Log("DROPPED GUN RB: " + rb);
                     if (rb != null)
                     {
-                        Debug.Log("ENTERED THIRD IF");
 
                         rb.AddForce(transform.forward * 5f, ForceMode.Impulse); // Adjust the force value as needed.
                     }
-                    Debug.Log("EXITED THIRD IF");
                 }
                 else
                 {
-                    Debug.Log("gunDropPrefab is not assigned in GunProperties.");
+                    Debug.Log("GunProperties is missing from the activeGun.");
                 }
             }
             else
@@ -126,21 +142,85 @@ public class GunInventory : MonoBehaviour
             // If there are other guns in the inventory, set the next one as active. Otherwise, set activeGun to null.
             if (guns.Count > 0)
             {
-                Debug.Log("ENTERED gun count IF");
 
                 SetActiveGun(guns[0]);
             }
             else
             {
-                Debug.Log("ENTERED gun count ELSE");
 
                 activeGun = null;
             }
 
-            Debug.Log("Exiting FIRST IF");
-        }
-        Debug.Log("EXITED FIRST IF");
 
+        }
+
+
+        UpdateUI();
+
+
+    }
+
+    //destroy if ran out of bullet
+    public void RemoveGun(GameObject gunToRemove)
+    {
+        if (guns.Contains(gunToRemove))
+        {
+            if (gunToRemove == activeGun)
+            {
+                activeGun = null;
+            }
+            guns.Remove(gunToRemove);
+            Destroy(gunToRemove);
+            UpdateUI();
+        }
+    }
+
+    private void UpdateUI()
+    {
+        for (int i = 0; i < gunSlots.Length; i++)
+        {
+            if (i < guns.Count && guns[i] != null)
+            {
+                GunProperties properties = guns[i].GetComponent<GunProperties>();
+
+                gunSlots[i].gameObject.SetActive(true); // Show the gun slot
+                gunSlots[i].sprite = properties ? properties.gunImage : null; // Set the gun image
+                gunSlots[i].color = Color.white; // Or any color to indicate the slot is filled
+
+                if (gunNames.Length > i)
+                {
+                    gunNames[i].text = properties ? properties.gunName : "Unknown";
+                }
+            }
+            else
+            {
+                gunSlots[i].gameObject.SetActive(false); // Hide the gun slot
+                if (gunNames.Length > i)
+                {
+                    gunNames[i].text = "";
+                }
+            }
+        }
+
+        // Update highlights
+        for (int i = 0; i < gunSlotHighlights.Length; i++)
+        {
+            if (i < guns.Count)
+            {
+                if (guns[i] == activeGun)
+                {
+                    gunSlotHighlights[i].gameObject.SetActive(true); // Highlight the active gun
+                }
+                else
+                {
+                    gunSlotHighlights[i].gameObject.SetActive(false); // De-highlight other guns
+                }
+            }
+            else
+            {
+                gunSlotHighlights[i].gameObject.SetActive(false); // Hide the highlight if there's no gun
+            }
+        }
     }
 
 

@@ -97,6 +97,7 @@ GameObject:
   - component: {fileID: -4106235289225830013}
   - component: {fileID: -1954794658082717352}
   - component: {fileID: -6581832672398923113}
+  - component: {fileID: -2823444079064748581}
   m_Layer: 0
   m_Name: Uzi_Pickup
   m_TagString: Untagged
@@ -186,6 +187,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6827aa582d64194aa554e7624abdd4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gunName: Uzi
+  gunImage: {fileID: 21300000, guid: bee24f07c57157e45a946eed3bfe8b84, type: 3}
   gunDropPrefab: {fileID: 1095254202041702, guid: 6273e2936e9d6a24e9f64c7c70d6bd19, type: 3}
 --- !u!54 &-1954794658082717352
 Rigidbody:
@@ -235,6 +238,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.036269262, y: 0.14970443, z: 0.37248352}
   m_Center: {x: 0, y: -0.0033774823, z: -0.032502145}
+--- !u!114 &-2823444079064748581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1095254202041702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd5d82399a335734493bc82fe62a66e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nb: {fileID: 1955499226411900593, guid: ac9ce13176c7bd345b324962244ac860, type: 3}
+  bulletSpawnPoint: {fileID: 8132557403856371637}
+  newton: 200
+  ammo: 5
+  reloadTime: 1
 --- !u!1 &1382682361031114
 GameObject:
   m_ObjectHideFlags: 0
